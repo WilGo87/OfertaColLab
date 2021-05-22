@@ -1,0 +1,5 @@
+{
+    "jupyter.jupyterServerType": "local",
+    "python.formatting.provider": "black",
+    "python.pythonPath": "C:\\Users\\wilma\\AppData\\Local\\Programs\\Python\\Python39\\python.exe"
+}
