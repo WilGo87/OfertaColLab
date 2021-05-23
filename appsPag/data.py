@@ -144,9 +144,10 @@ def expl_data_sec():
 
     st.header("Información detallada de la base Variables Unificadas")
 
-    baseAgrup = pd.DataFrame(base.groupby("Departamento")[y_categ].sum())
-    baseAgrup = baseAgrup.rename_axis("Departamento").reset_index()
-    baseAgrup = baseAgrup.sort_values([y_categ], ascending=False)
+    st.dataframe(baseCol)
+    # baseAgrup = pd.DataFrame(base.groupby("Departamento")[y_categ].sum())
+    # baseAgrup = baseAgrup.rename_axis("Departamento").reset_index()
+    # baseAgrup = baseAgrup.sort_values([y_categ], ascending=False)
 
 
 def model_data_sec():
