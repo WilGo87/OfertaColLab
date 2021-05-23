@@ -22,6 +22,9 @@ from scipy.stats import f_oneway
 from scipy.stats import chi2_contingency
 from scipy.stats import kruskal
 
+from sklearn import preprocessing
+
+
 # %%
 class OfertaLaboral:
     def __init__(
@@ -110,6 +113,8 @@ class OfertaLaboral:
 
         self.cuantiVar = self.baseOf.select_dtypes(np.number)
         self.cuantiVar = self.cuantiVar.drop(["Población", "AÑO"], axis=1)
+        # print(preprocessing.Normalizer().fit_transform(self.cuantiVar))
+        # self.cuantiVar = pd.DataFrame(preprocessing.Normalizer().fit_transform(self.cuantiVar),columns=self.cuantiVar.columns.values)
         self.covarianza = self.cuantiVar.cov()
         self.correl = self.cuantiVar.corr()
         val, vec = np.linalg.eig(self.correl)
@@ -170,8 +175,8 @@ class OfertaLaboral:
         features = self.cuantiVar.columns.values
         for item, feature in enumerate(features):
             self.cuantiVar[feature] = (
-                (self.cuantiVar[feature] / self.cuantiVar["Población"])
-            ) 
+                self.cuantiVar[feature] / self.cuantiVar["Población"]
+            )
 
         self.cuantiVar = self.cuantiVar.drop(["Población", "AÑO"], axis=1)
         self.covarianza = self.cuantiVar.cov()
@@ -221,19 +226,19 @@ class OfertaLaboral:
             sum(expl[0:2])
         )
 
-        return Pca_Tra, ajustPCA, expl_, resulFin, features, loadings, cuanti_pca 
-    
+        return Pca_Tra, ajustPCA, expl_, resulFin, features, loadings, cuanti_pca
+
     def kmeans(self, nuevosACP, Pca_Tra, n_clusters=3):
-        ## Me saco el k de debajo de la manga
+        #Se calcula de k de acuerdo a la gráfica del codo
         self.baseOf = self.baseOf[self.baseOf["Código DIVIPOLA"] != "ND"]
         self.baseOf = self.baseOf.drop(["Población", "AÑO"], axis=1)
-        kmedias=KMeans(n_clusters=n_clusters).fit(nuevosACP)
+        kmedias = KMeans(n_clusters=n_clusters).fit(nuevosACP)
         etiquetas = kmedias.labels_
-        self.baseOf["Grupo"]=kmedias.labels_
-        Pca_Tra["Grupo"]=kmedias.labels_
+        
+        self.baseOf["Grupo"] = kmedias.labels_
+        Pca_Tra["Grupo"] = kmedias.labels_
         matriz = self.baseOf
         tamanho = self.baseOf.groupby("Grupo").size()
-        media = self.baseOf.groupby("Grupo").mean()*10000 
-        return tamanho, media, matriz, Pca_Tra, etiquetas
-        
-
+        centroides = pd.DataFrame(kmedias.cluster_centers_,columns=["PC1","PC2"])
+        print(centroides)
+        return tamanho, centroides, matriz, Pca_Tra, etiquetas

@@ -14,7 +14,7 @@ if selecNav == "Home":
     # **Métodos Estadísticos**
     >>**Facultad de Ingeniería y Ciencias Básicas.**
 
-    >>**Universidad Central  2021 - II**
+    >>**Universidad Central  2021 - I**
 
     
     ## Integrantes
@@ -33,6 +33,6 @@ elif selecNav == "Exploración de los datos":
 elif selecNav == "Modelo ACP":
     model_data_sec()
 elif selecNav == "Modelo Clúster Jerárquico":
-    model_data_sec_clust()
+    model_agrup_jerarq()
 elif selecNav == "Modelo Clúster Kmeans":
-    model_data_kmeans_clust()
+    model_agrup_kmeans()
