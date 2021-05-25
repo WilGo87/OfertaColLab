@@ -7,6 +7,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.validators.scatter.marker import SymbolValidator
 
+import base64
+
 import matplotlib.pyplot as plt
 
 from scipy.cluster.hierarchy import (
@@ -75,6 +77,9 @@ def expl_data_sec():
     y_categ = st.selectbox("¿Que categoria desea seleccionar?", baseCol.columns.values)
 
     baseAgrup = pd.DataFrame(base.groupby("Departamento")[y_categ].sum())
+
+    st.markdown(get_table_download_link_csv(baseCol), unsafe_allow_html=True)
+
     baseAgrup = baseAgrup.rename_axis("Departamento").reset_index()
     baseAgrup = baseAgrup.sort_values([y_categ], ascending=False)
 
@@ -379,7 +384,7 @@ def model_agrup_jerarq(corte=2):
         axis=1,
     )
 
-    st.header("Agrupamiento Jerárquico " + y_axis)
+    st.header("Agrupamiento Jerárquico datos originales" + y_axis)
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
     clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
@@ -391,6 +396,8 @@ def model_agrup_jerarq(corte=2):
 
     st.subheader("Base con el Clustering Jerárquico")
     st.dataframe(base)
+
+    st.markdown(get_table_download_link_csv(base), unsafe_allow_html=True)
 
     base["Clustering Jerárquico"] = clusters
 
@@ -435,17 +442,7 @@ def model_agrup_jerarq(corte=2):
         cuanti_pca,
     ) = oferV.calculoPCATasas()
 
-    base = base[base["Código DIVIPOLA"] != "ND"]
-
-    base = base.drop(
-        [
-            "ÁREA GEOGRÁFICA",
-            "Población",
-        ],
-        axis=1,
-    )
-
-    st.header("Agrupamiento Jerárquico " + y_axis)
+    st.header("Agrupamiento Jerárquico tasa ocupacional " + y_axis)
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
     clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
@@ -456,10 +453,18 @@ def model_agrup_jerarq(corte=2):
     base["Clustering Jerárquico"] = clusters
 
     st.subheader("Base con el Clustering Jerárquico")
+
+    features = base.columns.values
+    for item, feature in enumerate(features):
+
+        if base[feature].dtypes == "int64":
+            base[feature] = base[feature] / base["Población"]
+
     st.dataframe(base)
 
-    base["Clustering Jerárquico"] = clusters
+    st.markdown(get_table_download_link_csv(base), unsafe_allow_html=True)
 
+    base["Clustering Jerárquico"] = clusters
     baseNew = base
     baseNew = baseNew.groupby(
         ["Departamento", "Clustering Jerárquico"], as_index=False
@@ -474,7 +479,7 @@ def model_agrup_jerarq(corte=2):
 
     base = base.set_index("Departamento")
 
-    st.header("Dendograma " + y_axis)
+    st.header("Dendograma tasa ocupacional " + y_axis)
     plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
@@ -536,16 +541,6 @@ def model_agrup_jerarq(corte=2):
         cuanti_pca,
     ) = oferV.calculoPCATasas()
 
-    base = base[base["Código DIVIPOLA"] != "ND"]
-
-    base = base.drop(
-        [
-            "ÁREA GEOGRÁFICA",
-            "Población",
-        ],
-        axis=1,
-    )
-
     st.header("Agrupamiento Jerárquico - Variables Unificadas")
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
@@ -558,6 +553,16 @@ def model_agrup_jerarq(corte=2):
 
     st.subheader("Base con el Clustering Jerárquico")
     st.dataframe(base)
+
+    features = base.columns.values
+    for item, feature in enumerate(features):
+
+        if base[feature].dtypes == "int64":
+            base[feature] = base[feature] / base["Población"]
+
+    st.dataframe(base)
+
+    st.markdown(get_table_download_link_csv(base), unsafe_allow_html=True)
 
     base["Clustering Jerárquico"] = clusters
 
@@ -620,9 +625,8 @@ def model_agrup_kmeans():
         cuanti_pca,
     ) = oferV.calculoPCA()
 
-    base = base[base["Código DIVIPOLA"] != "ND"]
-
     st.header("K means datos originales " + y_axis)
+    st.write(resulFin)
 
     within = []  ## Elbow Graph (codo), se tiende a elegir muchos grupos
     for k in range(1, 10):
@@ -640,12 +644,13 @@ def model_agrup_kmeans():
     st.write("Clasificación de los grupos")
     st.write(matriz)
 
+    st.markdown(get_table_download_link_csv(matriz), unsafe_allow_html=True)
+
     colores = ["green", "blue", "red"]
 
     color_cluster = [colores[etiquetas[item]] for item in range(len(etiquetas))]
 
     st.subheader("Gráfica de clústers")
-    st.write(resulFin)
 
     fig = px.scatter(Pca_Tra, x="PC1", y="PC2", color=color_cluster)
     fig.add_trace(
@@ -711,14 +716,22 @@ def model_agrup_kmeans():
     st.write("Promedio de los grupos")
     st.write(promed)
     st.write("Clasificación de los grupos")
+
+    caract = matriz.columns.values
+    for item, feature in enumerate(caract):
+
+        if matriz[feature].dtypes == "int64":
+            matriz[feature] = matriz[feature] / matriz["Población"]
+
     st.write(matriz)
+    st.markdown(get_table_download_link_csv(matriz), unsafe_allow_html=True)
+
+    st.subheader("Gráfica de clústers")
 
     colores = ["green", "blue", "red"]
 
     color_cluster = [colores[etiquetas[item]] for item in range(len(etiquetas))]
 
-    st.subheader("Gráfica de clústers")
-    st.write(resulFin)
     fig = px.scatter(Pca_Tra, x="PC1", y="PC2", color=color_cluster)
     fig.add_trace(
         go.Scatter(
@@ -802,6 +815,7 @@ def model_agrup_kmeans():
     ) = oferV.calculoPCATasas()
 
     st.header("K means tasa poblacional - Variables Unificadas")
+
     st.write(resulFin)
 
     within = []  ## Elbow Graph (codo), se tiende a elegir muchos grupos
@@ -817,14 +831,22 @@ def model_agrup_kmeans():
     st.write("Promedio de los grupos")
     st.write(promed)
     st.write("Clasificación de los grupos")
+
+    caract = matriz.columns.values
+    for item, feature in enumerate(caract):
+
+        if matriz[feature].dtypes == "int64":
+            matriz[feature] = matriz[feature] / matriz["Población"]
+
     st.write(matriz)
+    st.markdown(get_table_download_link_csv(matriz), unsafe_allow_html=True)
 
     colores = ["green", "blue", "red"]
 
     color_cluster = [colores[etiquetas[item]] for item in range(len(etiquetas))]
 
     st.subheader("Gráfica de clústers")
-    st.write(resulFin)
+
     fig = px.scatter(Pca_Tra, x="PC1", y="PC2", color=color_cluster)
     fig.add_trace(
         go.Scatter(
@@ -850,3 +872,12 @@ def model_agrup_kmeans():
     st.plotly_chart(fig)
 
     st.balloons()
+
+
+def get_table_download_link_csv(df):
+    # csv = df.to_csv(index=False)
+    csv = df.to_csv().encode()
+    # b64 = base64.b64encode(csv.encode()).decode()
+    b64 = base64.b64encode(csv).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="captura.csv" target="_blank">Download csv file</a>'
+    return href
