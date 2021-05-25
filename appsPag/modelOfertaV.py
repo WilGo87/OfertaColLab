@@ -51,7 +51,7 @@ class OfertaLaboral:
 
     # %%
     def lecturaBase(self):
-        for valLoop in range(len(self.base.columns) - 1, 0, -1):
+        for valLoop in range(len(self.base.columns) - 1, 0, -2):
             mes = self.base.columns.values[valLoop]
             if mes == self.nomCol:
                 break
@@ -60,36 +60,28 @@ class OfertaLaboral:
 
             ConsolParc = pd.pivot_table(
                 self.base,
-                values=mes,
+                values="TOTAL",
                 index="Código DIVIPOLA",
                 columns=[self.nomCol],
                 aggfunc=np.sum,
             )
 
-            ConsolParc["mes"] = mes
+            self.ConsolB.reset_index
 
-            self.cont = self.cont + 1
-            if self.cont == 1:
-                self.ConsolP = ConsolParc
-            elif self.cont == 2:
-                self.ConsolB = pd.concat([self.ConsolP, ConsolParc])
-            else:
-                self.ConsolB = pd.concat([self.ConsolB, ConsolParc])
+            self.ConsolB = ConsolParc
 
-        self.ConsolB.reset_index
+            if self.codPoblac.size != 0:
+                self.ConsolB = pd.merge(
+                    self.ConsolB,
+                    self.codPoblac,
+                    how="left",
+                    left_on=["Código DIVIPOLA"],
+                    right_on=["Código DIVIPOLA"],
+                )
 
-        self.ConsolB = pd.merge(
-            self.ConsolB,
-            self.codDpto,
-            how="left",
-            left_on=["Código DIVIPOLA"],
-            right_on=["Código DIVIPOLA"],
-        )
-
-        if self.codPoblac.size != 0:
             self.ConsolB = pd.merge(
                 self.ConsolB,
-                self.codPoblac,
+                self.codDpto,
                 how="left",
                 left_on=["Código DIVIPOLA"],
                 right_on=["Código DIVIPOLA"],
@@ -229,16 +221,16 @@ class OfertaLaboral:
         return Pca_Tra, ajustPCA, expl_, resulFin, features, loadings, cuanti_pca
 
     def kmeans(self, nuevosACP, Pca_Tra, n_clusters=3):
-        #Se calcula de k de acuerdo a la gráfica del codo
+        # Se calcula de k de acuerdo a la gráfica del codo
         self.baseOf = self.baseOf[self.baseOf["Código DIVIPOLA"] != "ND"]
         self.baseOf = self.baseOf.drop(["Población", "AÑO"], axis=1)
         kmedias = KMeans(n_clusters=n_clusters).fit(nuevosACP)
         etiquetas = kmedias.labels_
-        
+
         self.baseOf["Grupo"] = kmedias.labels_
         Pca_Tra["Grupo"] = kmedias.labels_
         matriz = self.baseOf
         tamanho = self.baseOf.groupby("Grupo").size()
-        centroides = pd.DataFrame(kmedias.cluster_centers_,columns=["PC1","PC2"])
+        centroides = pd.DataFrame(kmedias.cluster_centers_, columns=["PC1", "PC2"])
         print(centroides)
         return tamanho, centroides, matriz, Pca_Tra, etiquetas

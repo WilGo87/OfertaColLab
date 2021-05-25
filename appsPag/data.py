@@ -1,3 +1,4 @@
+from numpy.core.numeric import correlate
 import streamlit as st
 from appsPag.modelOfertaV import *
 import pandas as pd
@@ -55,16 +56,17 @@ def expl_data_sec():
     base = oferV.lecturaBase()
     base = oferV.cargaBaseT(base)
 
-    st.dataframe(base.head(5))
-    st.write(f"Cantidad de filas y columnas", base.shape)
+    baseCol = base.drop(
+        ["AÑO", "DPNOM", "ÁREA GEOGRÁFICA"],
+        axis=1,
+    )
+
+    st.dataframe(baseCol.head(5))
+    st.write(f"Cantidad de filas y columnas", baseCol.shape)
     baseCol = base.drop(
         [
             "Código DIVIPOLA",
-            "mes",
             "Departamento",
-            "AÑO",
-            "DPNOM",
-            "ÁREA GEOGRÁFICA",
             "Población",
         ],
         axis=1,
@@ -116,7 +118,6 @@ def expl_data_sec():
                 base,
                 on=[
                     "Código DIVIPOLA",
-                    "mes",
                     "Departamento",
                     "Población",
                     "AÑO",
@@ -127,17 +128,11 @@ def expl_data_sec():
 
     base = oferV.cargaBaseT(base_Ini)
 
-    st.dataframe(base.head(5))
-    st.write(f"Cantidad de filas y columnas", base.shape)
     baseCol = base.drop(
         [
-            "Código DIVIPOLA",
-            "mes",
-            "Departamento",
             "AÑO",
             "DPNOM",
             "ÁREA GEOGRÁFICA",
-            "Población",
         ],
         axis=1,
     )
@@ -145,9 +140,14 @@ def expl_data_sec():
     st.header("Información detallada de la base Variables Unificadas")
 
     st.dataframe(baseCol)
-    # baseAgrup = pd.DataFrame(base.groupby("Departamento")[y_categ].sum())
-    # baseAgrup = baseAgrup.rename_axis("Departamento").reset_index()
-    # baseAgrup = baseAgrup.sort_values([y_categ], ascending=False)
+    st.write(f"Cantidad de filas y columnas", base.shape)
+
+    baseCol = base.drop(
+        ["AÑO", "DPNOM", "ÁREA GEOGRÁFICA", "Departamento"],
+        axis=1,
+    )
+
+    st.write(baseCol.sum())
 
 
 def model_data_sec():
@@ -291,7 +291,6 @@ def model_data_sec():
                 base,
                 on=[
                     "Código DIVIPOLA",
-                    "mes",
                     "Departamento",
                     "Población",
                     "AÑO",
@@ -334,7 +333,7 @@ def model_data_sec():
     st.plotly_chart(fig)
 
 
-def model_agrup_jerarq():
+def model_agrup_jerarq(corte=2):
 
     # ------------------------------------------- Datos Originales ------------------------------------------------
 
@@ -372,12 +371,8 @@ def model_agrup_jerarq():
         cuanti_pca,
     ) = oferV.calculoPCA()
 
-    base = base[base["Código DIVIPOLA"] != "ND"]
-
     base = base.drop(
         [
-            "mes",
-            "DPNOM",
             "ÁREA GEOGRÁFICA",
             "Población",
         ],
@@ -390,7 +385,7 @@ def model_agrup_jerarq():
     clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
 
     clusters = fcluster(
-        clusterJerarq, t=2, criterion="distance"
+        clusterJerarq, t=corte, criterion="distance"
     )  # t es la altura del corte del dendrograma
     base["Clustering Jerárquico"] = clusters
 
@@ -402,16 +397,19 @@ def model_agrup_jerarq():
     baseNew = base
     baseNew = baseNew.groupby(
         ["Departamento", "Clustering Jerárquico"], as_index=False
-    )["AÑO"].count()
+    )["DPNOM"].count()
 
-    st.subheader("Cantidad de grupos con altura de corte 1")
+    st.subheader(f"Cantidad de grupos con altura de corte {corte}")
     st.write(baseNew)
 
     fig = px.bar(baseNew, x="Departamento", y="Clustering Jerárquico")
 
     st.plotly_chart(fig)
 
+    base = base.set_index("Departamento")
+
     st.header("Dendograma " + y_axis)
+    plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
     st.pyplot()
@@ -441,8 +439,6 @@ def model_agrup_jerarq():
 
     base = base.drop(
         [
-            "mes",
-            "DPNOM",
             "ÁREA GEOGRÁFICA",
             "Población",
         ],
@@ -455,7 +451,7 @@ def model_agrup_jerarq():
     clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
 
     clusters = fcluster(
-        clusterJerarq, t=2, criterion="distance"
+        clusterJerarq, t=corte, criterion="distance"
     )  # t es la altura del corte del dendrograma
     base["Clustering Jerárquico"] = clusters
 
@@ -467,16 +463,19 @@ def model_agrup_jerarq():
     baseNew = base
     baseNew = baseNew.groupby(
         ["Departamento", "Clustering Jerárquico"], as_index=False
-    )["AÑO"].count()
+    )["DPNOM"].count()
 
-    st.subheader("Cantidad de grupos con altura de corte 1")
+    st.subheader(f"Cantidad de grupos con altura de corte {corte}")
     st.write(baseNew)
 
     fig = px.bar(baseNew, x="Departamento", y="Clustering Jerárquico")
 
     st.plotly_chart(fig)
 
+    base = base.set_index("Departamento")
+
     st.header("Dendograma " + y_axis)
+    plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
     st.pyplot()
@@ -517,7 +516,6 @@ def model_agrup_jerarq():
                 base,
                 on=[
                     "Código DIVIPOLA",
-                    "mes",
                     "Departamento",
                     "Población",
                     "AÑO",
@@ -542,21 +540,19 @@ def model_agrup_jerarq():
 
     base = base.drop(
         [
-            "mes",
-            "DPNOM",
             "ÁREA GEOGRÁFICA",
             "Población",
         ],
         axis=1,
     )
 
-    st.header("Agrupamiento Jerárquico " + y_axis)
+    st.header("Agrupamiento Jerárquico - Variables Unificadas")
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
     clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
 
     clusters = fcluster(
-        clusterJerarq, t=2, criterion="distance"
+        clusterJerarq, t=corte, criterion="distance"
     )  # t es la altura del corte del dendrograma
     base["Clustering Jerárquico"] = clusters
 
@@ -568,16 +564,19 @@ def model_agrup_jerarq():
     baseNew = base
     baseNew = baseNew.groupby(
         ["Departamento", "Clustering Jerárquico"], as_index=False
-    )["AÑO"].count()
+    )["DPNOM"].count()
 
-    st.subheader("Cantidad de grupos con altura de corte 1")
+    st.subheader(f"Cantidad de grupos con altura de corte {corte}")
     st.write(baseNew)
 
     fig = px.bar(baseNew, x="Departamento", y="Clustering Jerárquico")
 
     st.plotly_chart(fig)
 
-    st.header("Dendograma " + y_axis)
+    base = base.set_index("Departamento")
+
+    st.header("Dendograma  - Variables Unificadas")
+    plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
     st.pyplot()
@@ -782,7 +781,6 @@ def model_agrup_kmeans():
                 base,
                 on=[
                     "Código DIVIPOLA",
-                    "mes",
                     "Departamento",
                     "Población",
                     "AÑO",
