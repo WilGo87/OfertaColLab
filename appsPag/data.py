@@ -338,7 +338,7 @@ def model_data_sec():
     st.plotly_chart(fig)
 
 
-def model_agrup_jerarq(corte=2):
+def model_agrup_jerarq(corte=3):
 
     # ------------------------------------------- Datos Originales ------------------------------------------------
 
@@ -384,10 +384,10 @@ def model_agrup_jerarq(corte=2):
         axis=1,
     )
 
-    st.header("Agrupamiento Jerárquico datos originales" + y_axis)
+    st.header("Agrupamiento Jerárquico datos originales " + y_axis)
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
-    clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
+    clusterJerarq = linkage(Pca_Tra, method="complete", metric="euclidean")
 
     clusters = fcluster(
         clusterJerarq, t=corte, criterion="distance"
@@ -445,7 +445,7 @@ def model_agrup_jerarq(corte=2):
     st.header("Agrupamiento Jerárquico tasa ocupacional " + y_axis)
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
-    clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
+    clusterJerarq = linkage(Pca_Tra, method="complete", metric="euclidean")
 
     clusters = fcluster(
         clusterJerarq, t=corte, criterion="distance"
@@ -454,11 +454,10 @@ def model_agrup_jerarq(corte=2):
 
     st.subheader("Base con el Clustering Jerárquico")
 
-    features = base.columns.values
     for item, feature in enumerate(features):
-
-        if base[feature].dtypes == "int64":
-            base[feature] = base[feature] / base["Población"]
+        print(feature)
+        # if base[feature].dtype == "int64":
+        base[feature] = base[feature] / base["Población"]
 
     st.dataframe(base)
 
@@ -514,6 +513,7 @@ def model_agrup_jerarq(corte=2):
             oferV = OfertaLaboral(
                 baseIni, y_axis, categoria, codMpio, codDpto, codPoblac
             )
+
             base = oferV.lecturaBase()
 
             base_Ini = pd.merge(
@@ -544,21 +544,24 @@ def model_agrup_jerarq(corte=2):
     st.header("Agrupamiento Jerárquico - Variables Unificadas")
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
-    clusterJerarq = linkage(Pca_Tra, method="ward", metric="euclidean")
+    clusterJerarq = linkage(Pca_Tra, method="complete", metric="euclidean")
 
     clusters = fcluster(
         clusterJerarq, t=corte, criterion="distance"
     )  # t es la altura del corte del dendrograma
     base["Clustering Jerárquico"] = clusters
+    base["PoblaciónT"] = base["Población"]
+    base["DepartamentoT"] = base["Departamento"]
 
     st.subheader("Base con el Clustering Jerárquico")
-    st.dataframe(base)
 
     features = base.columns.values
     for item, feature in enumerate(features):
+        if base[feature].dtypes == "int64" or base[feature].dtypes == "float64":
+            base[feature] = base[feature] / base["PoblaciónT"]
+            print(base[feature])
 
-        if base[feature].dtypes == "int64":
-            base[feature] = base[feature] / base["Población"]
+    base = base.drop(["AÑO", "ÁREA GEOGRÁFICA", "Población", "DepartamentoT"], axis=1)
 
     st.dataframe(base)
 
@@ -643,7 +646,6 @@ def model_agrup_kmeans():
     st.write(promed)
     st.write("Clasificación de los grupos")
     st.write(matriz)
-
     st.markdown(get_table_download_link_csv(matriz), unsafe_allow_html=True)
 
     colores = ["green", "blue", "red"]
@@ -832,13 +834,19 @@ def model_agrup_kmeans():
     st.write(promed)
     st.write("Clasificación de los grupos")
 
-    caract = matriz.columns.values
-    for item, feature in enumerate(caract):
+    matriz["PoblaciónT"] = matriz["Población"]
+    matriz["DepartamentoT"] = matriz["Departamento"]
 
-        if matriz[feature].dtypes == "int64":
-            matriz[feature] = matriz[feature] / matriz["Población"]
+    charact = matriz.columns.values
+    for item, feature in enumerate(charact):
+        if matriz[feature].dtypes == "int64" or matriz[feature].dtypes == "float64":
+            matriz[feature] = matriz[feature] / matriz["PoblaciónT"]
 
-    st.write(matriz)
+    matriz = matriz.drop(
+        ["AÑO", "ÁREA GEOGRÁFICA", "Población", "DepartamentoT"], axis=1
+    )
+
+    st.dataframe(matriz)
     st.markdown(get_table_download_link_csv(matriz), unsafe_allow_html=True)
 
     colores = ["green", "blue", "red"]

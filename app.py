@@ -33,6 +33,6 @@ elif selecNav == "Exploración de los datos":
 elif selecNav == "Modelo ACP":
     model_data_sec()
 elif selecNav == "Modelo Clúster Jerárquico":
-    model_agrup_jerarq()
+    model_agrup_jerarq(corte=5)
 elif selecNav == "Modelo Clúster Kmeans":
     model_agrup_kmeans()

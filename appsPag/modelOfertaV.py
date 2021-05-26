@@ -79,13 +79,13 @@ class OfertaLaboral:
                     right_on=["Código DIVIPOLA"],
                 )
 
-            self.ConsolB = pd.merge(
-                self.ConsolB,
-                self.codDpto,
-                how="left",
-                left_on=["Código DIVIPOLA"],
-                right_on=["Código DIVIPOLA"],
-            )
+                self.ConsolB = pd.merge(
+                    self.ConsolB,
+                    self.codDpto,
+                    how="left",
+                    left_on=["Código DIVIPOLA"],
+                    right_on=["Código DIVIPOLA"],
+                )
 
         return self.ConsolB
 
@@ -223,15 +223,14 @@ class OfertaLaboral:
     def kmeans(self, nuevosACP, Pca_Tra, n_clusters=3):
         # Se calcula de k de acuerdo a la gráfica del codo
         self.baseOf = self.baseOf[self.baseOf["Código DIVIPOLA"] != "ND"]
-        matriz = self.baseOf
-        self.baseOf = self.baseOf.drop(["Población", "AÑO"], axis=1)
+        
+        # self.baseOf = self.baseOf.drop(["Población", "AÑO"], axis=1)
         kmedias = KMeans(n_clusters=n_clusters).fit(nuevosACP)
         etiquetas = kmedias.labels_
 
         self.baseOf["Grupo"] = kmedias.labels_
         Pca_Tra["Grupo"] = kmedias.labels_
-        
+        matriz = self.baseOf
         tamanho = self.baseOf.groupby("Grupo").size()
-        centroides = pd.DataFrame(kmedias.cluster_centers_, columns=["PC1", "PC2"])
-        print(matriz)
+        centroides = pd.DataFrame(kmedias.cluster_centers_, columns=["PC1", "PC2"])      
         return tamanho, centroides, matriz, Pca_Tra, etiquetas
