@@ -415,7 +415,7 @@ def model_agrup_jerarq(corte=3):
 
     base = base.set_index("Departamento")
 
-    st.header("Dendograma " + y_axis)
+    st.header("Dendograma datos originales" + y_axis)
     plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
@@ -442,7 +442,7 @@ def model_agrup_jerarq(corte=3):
         cuanti_pca,
     ) = oferV.calculoPCATasas()
 
-    st.header("Agrupamiento Jerárquico tasa ocupacional " + y_axis)
+    st.header("Agrupamiento Jerárquico tasa poblacional " + y_axis)
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
     clusterJerarq = linkage(Pca_Tra, method="complete", metric="euclidean")
@@ -478,7 +478,7 @@ def model_agrup_jerarq(corte=3):
 
     base = base.set_index("Departamento")
 
-    st.header("Dendograma tasa ocupacional " + y_axis)
+    st.header("Dendograma tasa poblacional " + y_axis)
     plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
@@ -541,7 +541,7 @@ def model_agrup_jerarq(corte=3):
         cuanti_pca,
     ) = oferV.calculoPCATasas()
 
-    st.header("Agrupamiento Jerárquico - Variables Unificadas")
+    st.header("Agrupamiento Jerárquico tasa poblacional - Variables Unificadas")
 
     st.set_option("deprecation.showPyplotGlobalUse", False)
     clusterJerarq = linkage(Pca_Tra, method="complete", metric="euclidean")
@@ -583,7 +583,7 @@ def model_agrup_jerarq(corte=3):
 
     base = base.set_index("Departamento")
 
-    st.header("Dendograma  - Variables Unificadas")
+    st.header("Dendograma tasa poblacional - Variables Unificadas")
     plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
@@ -702,7 +702,7 @@ def model_agrup_kmeans():
         cuanti_pca,
     ) = oferV.calculoPCATasas()
 
-    st.header("K means tasas de población " + y_axis)
+    st.header("K means tasa poblacional " + y_axis)
     st.write(resulFin)
 
     within = []  ## Elbow Graph (codo), se tiende a elegir muchos grupos

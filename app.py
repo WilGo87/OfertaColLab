@@ -1,10 +1,10 @@
 import streamlit as st
-from appsPag.main import load_page_princ
+from appsPag.main import *
 from appsPag.data import *
 
 selecNav = st.sidebar.selectbox(
     "Navigation",
-    ["Home", "Bienvenida", "Exploración de los datos", "Modelo ACP", "Modelo Clúster Jerárquico", "Modelo Clúster Kmeans"],
+    ["Home", "Bienvenida", "Exploración de los datos", "Modelo ACP", "Modelo Clúster Jerárquico", "Modelo Clúster Kmeans", "Conclusiones"],
 )
 
 if selecNav == "Home":
@@ -36,3 +36,5 @@ elif selecNav == "Modelo Clúster Jerárquico":
     model_agrup_jerarq(corte=5)
 elif selecNav == "Modelo Clúster Kmeans":
     model_agrup_kmeans()
+elif selecNav == "Conclusiones":
+    load_Conclus()
