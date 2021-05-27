@@ -222,8 +222,6 @@ def model_data_sec():
     baseIni = "OfertaLaboral.xlsx"
     codPoblac = "OfertaLaboral_Poblac.xlsx"
 
-    st.header("Información detallada de la Union de las bases " + y_axis)
-
     oferV = OfertaLaboral(baseIni, y_axis, categoria, codMpio, codDpto, codPoblac)
     base = oferV.lecturaBase()
     base = oferV.cargaBaseT(base)
