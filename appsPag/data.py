@@ -415,7 +415,7 @@ def model_agrup_jerarq(corte=3):
 
     base = base.set_index("Departamento")
 
-    st.header("Dendograma datos originales" + y_axis)
+    st.header("Dendograma datos originales " + y_axis)
     plt.rcParams["figure.figsize"] = (20, 10)
     dendrograma = sch.dendrogram(clusterJerarq, labels=base.index)
     st.balloons()
